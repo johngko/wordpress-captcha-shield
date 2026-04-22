@@ -28,8 +28,8 @@
 ![注册表单验证码](assets/images/3.png)
 *图 3：WordPress 注册表单集成验证码*
 
-![评论表单验证码](assets/images/4.png)
-*图 4：WordPress 评论表单集成验证码*
+![高风险环境二次弹出验证](assets/images/4.png)
+*图 4：WordPress 高风险环境二次弹出验证*
 
 ![短代码使用](assets/images/5.png)
 *图 5：在文章中使用短代码插入验证码*
