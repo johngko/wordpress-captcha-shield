@@ -31,7 +31,7 @@ class Captcha_Shield_Forms {
 
     private function init_comment_hooks() {
         add_action( 'comment_form_submit_field', array( $this, 'add_comment_captcha' ) );
-        add_filter( 'pre_comment_on_post', array( $this, 'verify_comment_captcha' ), 10, 1 );
+        add_action( 'pre_comment_on_post', array( $this, 'verify_comment_captcha' ), 10, 1 );
     }
 
     private function should_enable( $option_key ) {
@@ -48,6 +48,10 @@ class Captcha_Shield_Forms {
 
     public function verify_login_captcha( $user ) {
         if ( ! $this->should_enable( 'enable_login' ) ) {
+            return $user;
+        }
+
+        if ( is_wp_error( $user ) ) {
             return $user;
         }
 

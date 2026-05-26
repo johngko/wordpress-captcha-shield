@@ -55,11 +55,12 @@ class Captcha_Shield_Frontend {
         );
 
         wp_localize_script( 'captcha-shield-frontend', 'captchaShield', array(
-            'ajax_url' => admin_url( 'admin-ajax.php' ),
-            'nonce'    => wp_create_nonce( 'captcha_shield_verify' ),
-            'app_key'  => $options['app_key'],
-            'api_base' => $options['api_base'],
-            'lang'     => $options['lang'],
+            'ajax_url'     => admin_url( 'admin-ajax.php' ),
+            'nonce'        => wp_create_nonce( 'captcha_shield_verify' ),
+            'app_key'      => $options['app_key'],
+            'api_base'     => $options['api_base'],
+            'lang'         => $options['lang'],
+            'display_mode' => $options['display_mode'],
         ) );
     }
 
@@ -82,11 +83,6 @@ class Captcha_Shield_Frontend {
             }
         }
 
-        $options = $this->settings->get_options();
-        if ( ! empty( $options['enable_login'] ) || ! empty( $options['enable_register'] ) || ! empty( $options['enable_comment'] ) ) {
-            return true;
-        }
-
         return false;
     }
 
@@ -98,8 +94,11 @@ class Captcha_Shield_Frontend {
         }
 
         $atts = shortcode_atts( array(
-            'lang'    => $options['lang'],
-            'visible' => 'true',
+            'lang'           => $options['lang'],
+            'visible'        => 'true',
+            'display_mode'   => $options['display_mode'],
+            'bind_element'   => '',
+            'submit_element' => '',
         ), $atts, 'captcha_shield' );
 
         $this->has_captcha = true;
@@ -114,17 +113,29 @@ class Captcha_Shield_Frontend {
             return '';
         }
 
-        $app_key  = esc_attr( $options['app_key'] );
-        $api_base = esc_attr( $options['api_base'] );
-        $lang     = esc_attr( isset( $atts['lang'] ) ? $atts['lang'] : $options['lang'] );
-        $visible  = esc_attr( isset( $atts['visible'] ) ? $atts['visible'] : 'true' );
+        $app_key      = esc_attr( $options['app_key'] );
+        $api_base     = esc_attr( $options['api_base'] );
+        $lang         = esc_attr( isset( $atts['lang'] ) ? $atts['lang'] : $options['lang'] );
+        $visible      = isset( $atts['visible'] ) ? filter_var( $atts['visible'], FILTER_VALIDATE_BOOLEAN ) : true;
+        $display_mode = esc_attr( isset( $atts['display_mode'] ) ? $atts['display_mode'] : $options['display_mode'] );
+        $bind_element = esc_attr( isset( $atts['bind_element'] ) ? $atts['bind_element'] : '' );
+        $submit_element = esc_attr( isset( $atts['submit_element'] ) ? $atts['submit_element'] : '' );
 
         $html  = '<div class="captcha-shield-container">';
         $html .= '<captcha-widget';
         $html .= ' app-key="' . $app_key . '"';
         $html .= ' api-base="' . $api_base . '"';
         $html .= ' lang="' . $lang . '"';
-        $html .= ' visible="' . $visible . '"';
+        if ( $visible ) {
+            $html .= ' visible';
+        }
+        $html .= ' display-mode="' . $display_mode . '"';
+        if ( ! empty( $bind_element ) ) {
+            $html .= ' bind-element="' . $bind_element . '"';
+        }
+        if ( ! empty( $submit_element ) ) {
+            $html .= ' submit-element="' . $submit_element . '"';
+        }
         $html .= '></captcha-widget>';
         $html .= '<input type="hidden" name="captcha_shield_lot_number" value="" />';
         $html .= '<input type="hidden" name="captcha_shield_sign_token" value="" />';

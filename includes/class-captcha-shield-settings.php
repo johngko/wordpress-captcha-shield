@@ -12,6 +12,7 @@ class Captcha_Shield_Settings {
         'app_secret'       => '',
         'api_base'         => 'https://api.255705.com',
         'lang'             => 'zh-CN',
+        'display_mode'     => 'popup',
         'enable_login'     => false,
         'enable_register'  => false,
         'enable_comment'   => false,
@@ -89,6 +90,14 @@ class Captcha_Shield_Settings {
             'captcha_shield_basic'
         );
 
+        add_settings_field(
+            'display_mode',
+            __( '展示模式', 'captcha-shield' ),
+            array( $this, 'render_display_mode_field' ),
+            'captcha-shield',
+            'captcha_shield_basic'
+        );
+
         add_settings_section(
             'captcha_shield_forms',
             __( '表单集成', 'captcha-shield' ),
@@ -128,6 +137,7 @@ class Captcha_Shield_Settings {
         $sanitized['app_secret'] = sanitize_text_field( $input['app_secret'] );
         $sanitized['api_base']   = esc_url_raw( $input['api_base'] );
         $sanitized['lang']       = sanitize_text_field( $input['lang'] );
+        $sanitized['display_mode'] = sanitize_text_field( $input['display_mode'] );
 
         $sanitized['enable_login']    = ! empty( $input['enable_login'] );
         $sanitized['enable_register'] = ! empty( $input['enable_register'] );
@@ -141,13 +151,17 @@ class Captcha_Shield_Settings {
             $sanitized['lang'] = 'zh-CN';
         }
 
+        if ( ! in_array( $sanitized['display_mode'], array( 'popup', 'bind', 'invisible' ), true ) ) {
+            $sanitized['display_mode'] = 'popup';
+        }
+
         return $sanitized;
     }
 
     public function render_basic_section() {
         echo '<p>' . esc_html__( '配置数字盾验验证码服务的基本参数。请在控制台获取 App Key 和 App Secret。', 'captcha-shield' ) . '</p>';
         echo '<p>';
-        echo '<a href="https://255705.com/console" target="_blank" class="button button-secondary" style="margin-right: 10px;">';
+        echo '<a href="https://console.255705.com/" target="_blank" class="button button-secondary" style="margin-right: 10px;">';
         echo '<span class="dashicons dashicons-admin-site" style="margin-top: 3px; margin-right: 5px;"></span>';
         echo esc_html__( '打开控制台', 'captcha-shield' );
         echo '</a>';
@@ -193,6 +207,17 @@ class Captcha_Shield_Settings {
         echo '<p class="description">' . esc_html__( '验证码组件显示语言。', 'captcha-shield' ) . '</p>';
     }
 
+    public function render_display_mode_field() {
+        $options = $this->get_options();
+        $value   = $options['display_mode'];
+        echo '<select id="captcha_shield_display_mode" name="captcha_shield_options[display_mode]">';
+        echo '<option value="popup"' . selected( $value, 'popup', false ) . '>' . esc_html__( '常规模式', 'captcha-shield' ) . '</option>';
+        echo '<option value="bind"' . selected( $value, 'bind', false ) . '>' . esc_html__( '按钮绑定', 'captcha-shield' ) . '</option>';
+        echo '<option value="invisible"' . selected( $value, 'invisible', false ) . '>' . esc_html__( '无感验证', 'captcha-shield' ) . '</option>';
+        echo '</select>';
+        echo '<p class="description">' . esc_html__( '验证码展示模式：常规模式直接显示验证码；按钮绑定模式绑定到提交按钮，点击时触发验证；无感验证模式在后台自动完成验证。', 'captcha-shield' ) . '</p>';
+    }
+
     public function render_enable_login_field() {
         $options = $this->get_options();
         $checked = $options['enable_login'];
@@ -229,7 +254,7 @@ class Captcha_Shield_Settings {
                         <div class="captcha-shield-step-content">
                             <h3><?php esc_html_e( '注册账号并创建应用', 'captcha-shield' ); ?></h3>
                             <p><?php esc_html_e( '访问数字盾验控制台，注册账号后创建一个新应用。', 'captcha-shield' ); ?></p>
-                            <a href="https://255705.com/console" target="_blank" class="button button-primary">
+                            <a href="https://console.255705.com/" target="_blank" class="button button-primary">
                                 <?php esc_html_e( '前往控制台', 'captcha-shield' ); ?>
                                 <span class="dashicons dashicons-external" style="margin-top: 3px; margin-left: 5px;"></span>
                             </a>
@@ -278,9 +303,14 @@ class Captcha_Shield_Settings {
                 <ul>
                     <li><code>lang</code> - <?php esc_html_e( '语言设置，可选 zh-CN（默认）或 en-US', 'captcha-shield' ); ?></li>
                     <li><code>visible</code> - <?php esc_html_e( '是否可见，可选 true（默认）或 false', 'captcha-shield' ); ?></li>
+                    <li><code>display_mode</code> - <?php esc_html_e( '展示模式，可选 popup（常规）、bind（按钮绑定）、invisible（无感验证）', 'captcha-shield' ); ?></li>
+                    <li><code>bind_element</code> - <?php esc_html_e( '按钮绑定模式下的目标元素选择器（如 #submit-btn）', 'captcha-shield' ); ?></li>
+                    <li><code>submit_element</code> - <?php esc_html_e( '无感验证模式下的表单提交按钮选择器（如 #submit-btn）', 'captcha-shield' ); ?></li>
                 </ul>
                 <p><?php esc_html_e( '示例：', 'captcha-shield' ); ?></p>
                 <code>[captcha_shield lang="en-US" visible="true"]</code>
+                <br/>
+                <code>[captcha_shield display_mode="bind" bind_element="#login-btn"]</code>
                 
                 <h3><?php esc_html_e( '表单集成', 'captcha-shield' ); ?></h3>
                 <p><?php esc_html_e( '启用表单集成后，验证码将自动添加到对应的 WordPress 表单中，用户必须完成验证才能提交。', 'captcha-shield' ); ?></p>
