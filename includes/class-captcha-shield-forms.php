@@ -9,10 +9,27 @@ class Captcha_Shield_Forms {
     private $frontend;
     private $verify;
 
+    private static $allowed_widget_html;
+
     public function __construct( Captcha_Shield_Settings $settings, Captcha_Shield_Frontend $frontend, Captcha_Shield_Verify $verify ) {
         $this->settings = $settings;
         $this->frontend = $frontend;
         $this->verify   = $verify;
+
+        self::$allowed_widget_html = array(
+            'div'            => array( 'class' => true ),
+            'captcha-widget' => array(
+                'app-key'  => true,
+                'api-base' => true,
+                'lang'     => true,
+                'visible'  => true,
+            ),
+            'input' => array(
+                'type'  => true,
+                'name'  => true,
+                'value' => true,
+            ),
+        );
 
         $this->init_login_hooks();
         $this->init_register_hooks();
@@ -43,7 +60,7 @@ class Captcha_Shield_Forms {
         if ( ! $this->should_enable( 'enable_login' ) ) {
             return;
         }
-        echo $this->frontend->render_captcha_widget();
+        echo wp_kses( $this->frontend->render_captcha_widget(), self::$allowed_widget_html );
     }
 
     public function verify_login_captcha( $user ) {
@@ -73,7 +90,7 @@ class Captcha_Shield_Forms {
         if ( ! $this->should_enable( 'enable_register' ) ) {
             return;
         }
-        echo $this->frontend->render_captcha_widget();
+        echo wp_kses( $this->frontend->render_captcha_widget(), self::$allowed_widget_html );
     }
 
     public function verify_register_captcha( $errors, $sanitized_user_login, $user_email ) {
@@ -103,7 +120,7 @@ class Captcha_Shield_Forms {
 
         $captcha_html = $this->frontend->render_captcha_widget();
 
-        return $captcha_html . $submit_field;
+        return wp_kses( $captcha_html, self::$allowed_widget_html ) . $submit_field;
     }
 
     public function verify_comment_captcha( $comment_post_id ) {
